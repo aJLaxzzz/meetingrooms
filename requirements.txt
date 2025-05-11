@@ -1,3 +1,9 @@
 Flask==2.3.3
 Flask-SQLAlchemy==3.1.1
 Flask-RESTful==0.3.10
+flask
+flask-login
+flask-sqlalchemy
+werkzeug
+flask_bcrypt
+marshmallow==3.0.0

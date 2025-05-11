@@ -1,6 +1,6 @@
 from flask_restful import Resource, reqparse
 from app.models import MeetingRoom
-from app.db import db
+from app.extensions import db
 
 # Обновленный парсер для POST запросов
 parser = reqparse.RequestParser()
