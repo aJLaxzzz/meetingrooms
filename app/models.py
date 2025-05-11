@@ -14,6 +14,7 @@ class User(db.Model, UserMixin):
 
 
 class MeetingRoom(db.Model):
+
     __tablename__ = 'meeting_rooms'
 
     id = db.Column(db.Integer, primary_key=True)

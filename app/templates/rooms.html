@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Список комнат</title>
+    <style>
+        body {
+            background-color: #121212;
+            color: #c5c6c7;
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            width: 100%;
+            padding: 10px 20px;
+            background-color: #1f2833;
+            color: #66fcf1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+            position: fixed;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .container {
+            margin-top: 80px;
+            padding: 20px;
+        }
+
+        .real-estate-listing {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            background-color: #2b333e;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 255, 255, 0.5);
+            transition: transform 0.3s ease;
+            width: 80%;
+            margin: 20px auto;
+        }
+
+        .real-estate-listing:hover {
+            transform: scale(1.03);
+            box-shadow: 0 10px 30px rgba(0, 255, 255, 0.75);
+        }
+
+        .real-estate-listing img {
+            border-radius: 5px;
+            margin-bottom: 10px;
+            width: 100%;
+            max-width: 300px;
+            height: auto;
+        }
+
+        .real-estate-listing h2 {
+            background-color: #0b0c10;
+            color: #66fcf1;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 3px 6px rgba(0, 255, 255, 0.5);
+        }
+
+        .real-estate-listing p {
+            background-color: #1f2833;
+            color: #66fcf1;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 5px 0;
+            box-shadow: 0 2px 5px rgba(0, 255, 255, 0.3);
+        }
+
+        .real-estate-listing p:hover {
+            background-color: #0b0c10;
+        }
+
+        .booking-button {
+            padding: 12px 24px;
+            margin-top: 10px;
+            border: none;
+            border-radius: 5px;
+            background-color: #45a29e;
+            color: #fff;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+            text-decoration: none;
+        }
+
+        .booking-button:hover {
+            background-color: #ff5555;
+            transform: scale(1.05);
+        }
+
+        .logout-link {
+            color: #66fcf1;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .logout-link:hover {
+            text-decoration: underline;
+        }
+        .logout-link {
+        position: absolute;
+        top: 30px;
+        left: 1500px; /* Отступ от левого края */
+        color: #66fcf1; /* Цвет текста */
+        text-decoration: none; /* Убираем подчеркивание */
+        font-size: 16px;
+        padding: 10px;
+        border-radius: 5px;
+        background-color: #0b0c10; /* Цвет фона */
+        transition: background-color 0.3s, transform 0.2s; /* Плавный переход */
+    }
+
+    .logout-link:hover {
+        background-color: #ff5555; /* Цвет фона при наведении */
+        transform: scale(1.05); /* Увеличение кнопки при наведении */
+    }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Список переговорных комнат</h1>
+        <a href="{{ url_for('auth.logout') }}" class="logout-link">Выйти</a>
+    </header>
+
+    <div class="container">
+        {% for room in rooms %}
+            <div class="real-estate-listing">
+                <h2>{{ room.name }}</h2>
+                <img src="{{ url_for('static', filename=room.photo_url) }}" alt="Фото комнаты">
+                <p>Площадь: {{ room.area }} м²</p>
+                <p>Вместимость: {{ room.capacity }} человек</p>
+                <p>Скорость интернета: {{ room.internet_speed }} Мбит/с</p>
+                <p>Этаж: {{ room.floor }}</p>
+                <p>{{ room.description or 'Описание отсутствует' }}</p>
+                <div class="booking-details">
+                <label th:for="'startDate-' + ${meetingRooms.id}">Дата начала:</label>
+                <input type="date" th:id="'startDate-' + ${meetingRooms.id}" th:name="'startDate-' + ${meetingRooms.id}" required>
+
+                <label th:for="'startHour-' + ${meetingRooms.id}">Часы:</label>
+                <select th:id="'startHour-' + ${meetingRooms.id}" th:name="'startHour-' + ${meetingRooms.id}" required>
+                    <!-- Часы от 8 до 20 -->
+                    <option value="08">8</option>
+                    <option value="09">9</option>
+                    <option value="10">10</option>
+                    <option value="11">11</option>
+                    <option value="12">12</option>
+                    <option value="13">13</option>
+                    <option value="14">14</option>
+                    <option value="15">15</option>
+                    <option value="16">16</option>
+                    <option value="17">17</option>
+                    <option value="18">18</option>
+                    <option value="19">19</option>
+                    <option value="20">20</option>
+                </select>
+
+                <label th:for="'startMinute-' + ${meetingRooms.id}">Минуты:</label>
+                <select th:id="'startMinute-' + ${meetingRooms.id}" th:name="'startMinute-' + ${meetingRooms.id}" required>
+                    <option value="00">00</option>
+                    <option value="30">30</option>
+                </select>
+
+                <label th:for="'duration-' + ${meetingRooms.id}">Продолжительность:</label>
+                <select th:id="'duration-' + ${meetingRooms.id}" th:name="'duration-' + ${meetingRooms.id}" required>
+                    <option value="30">30 минут</option>
+                    <option value="60">1 час</option>
+                    <option value="90">1.5 часа</option>
+                    <option value="120">2 часа</option>
+                </select>
+            </div>
+                <a  class="booking-button">Забронировать</a>
+            </div>
+        {% endfor %}
+    </div>
+</body>
+</html>

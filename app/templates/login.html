@@ -1,19 +1,138 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="ru" xmlns:th="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="UTF-8">
+    <link rel="shortcut icon" href="/resources/images/logo.ico" type="image/x-icon">
     <title>Вход</title>
+    <style>
+        body {
+            background-color: #121212; /* Темный фон */
+            color: #c5c6c7; /* Светло-серый текст */
+            font-family: 'Arial', sans-serif; /* Шрифт */
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        header, footer {
+            width: 100%;
+            padding: 10px 20px;
+            background-color: #1f2833;
+            color: #66fcf1;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: start;
+            align-items: center;
+        }
+
+        header img, footer img {
+            height: 40px;
+            margin-right: 15px;
+        }
+
+        footer {
+            justify-content: center;
+            position: absolute;
+            bottom: 0;
+            font-size: 0.8em;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 360px;
+            padding: 20px;
+            border-radius: 5px;
+            background-color: #1f2833; /* Слегка светлее темного фона */
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.5); /* Неоновая подсветка */
+            margin-top: 40px; /* Отступ от header */
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #66fcf1; /* Неоновый цвет для текста */
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            background-color: #0b0c10;
+            color: #66fcf1; /* Неоновый цвет для ввода */
+            box-shadow: 0 0 5px rgba(0, 255, 255, 0.5); /* Неоновая подсветка для инпутов */
+        }
+
+        button.btn4 {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            background-color: #45a29e; /* Темно-сине-зеленый фон кнопки */
+            color: #0b0c10; /* Темный текст на кнопке */
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.5); /* Неоновая подсветка кнопки */
+            transition: background-color 0.3s;
+        }
+
+        button.btn4:hover {
+            background-color: #66fcf1; /* Смена фона кнопки на неоновый при наведении */
+        }
+
+        a {
+            color: #66fcf1; /* Неоновый цвет ссылок */
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .alert.alert-error {
+            color: #ff5555; /* Цвет ошибки */
+            padding: 10px;
+            text-align: center;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            background-color: #1f2833;
+            box-shadow: 0 0 10px rgba(255, 85, 85, 0.5); /* Красная неоновая подсветка ошибок */
+        }
+    </style>
 </head>
 <body>
-    <h1>Вход</h1>
+<header>
+    <h1>Meeting Room Booking</h1>
+</header>
+<div class="container">
     <form method="POST">
-        <input type="text" name="username" placeholder="Имя пользователя" required>
-        <input type="password" name="password" placeholder="Пароль" required>
-        <button type="submit">Войти</button>
+        <div style="display: flex; justify-content: center; margin-bottom: 20px;">
+            <h2>Вход в аккаунт</h2>
+        </div>
+        <div class="form-group">
+            <label for="username">Имя пользователя:</label>
+            <input type="text" id="username" name="username" required/>
+        </div>
+        <div class="form-group">
+            <label for="password">Пароль:</label>
+            <input type="password" id="password" name="password" required/>
+        </div>
+        <div style="display: flex; justify-content: center; margin-top: 40px;">
+            <button class="btn4" type="submit">Вход</button>
+        </div>
+        <p>Аккаунт не создан?<br> <a href="/register">Регистрация</a></p>
     </form>
-    {% if error %}
-        <p style="color:red;">{{ error }}</p>
-    {% endif %}
-    <a href="/register">Нет аккаунта?</a>
+</div>
+<footer>
+    © 2024 Meeting Room Booking. Черных Тимофей ИКБО-36-22.
+</footer>
 </body>
 </html>

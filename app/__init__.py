@@ -27,6 +27,19 @@ def create_app():
         generator = MeetingRoomGenerator()
         generator.fill_database()
 
+        if not User.query.filter_by(username='admin').first():
+            admin_password = bcrypt.generate_password_hash('admin').decode('utf-8')
+            admin_user = User(username='admin', password_hash=admin_password, role='admin')
+            db.session.add(admin_user)
+
+        if not User.query.filter_by(username='user').first():
+            user_password = bcrypt.generate_password_hash('user').decode('utf-8')
+            regular_user = User(username='user', password_hash=user_password, role='user')
+            db.session.add(regular_user)
+
+            # Сохраняем изменения в базе
+        db.session.commit()
+
     api = Api(app)
     api.add_resource(RoomListResource, '/api/rooms')
     api.add_resource(RoomResource, '/api/rooms/<int:room_id>')
