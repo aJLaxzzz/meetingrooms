@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <title>Добавить конференц-зал</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,500&display=swap">
+    <style>
+        body {
+            background-color: #121212;
+            color: #c5c6c7;
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        header, footer {
+            width: 100%;
+            padding: 10px 20px;
+            background-color: #1f2833;
+            color: #66fcf1;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: start;
+            align-items: center;
+        }
+
+        header img, footer img {
+            height: 40px;
+            margin-right: 15px;
+        }
+
+        footer {
+            justify-content: center;
+            bottom: 0;
+            font-size: 0.8em;
+        }
+
+        .container {
+            background-color: #1f2833;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.6);
+            width: 90%;
+            max-width: 600px;
+            margin: 20px 0;
+            flex: 1;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        label, h2 {
+            color: #66fcf1;
+        }
+
+        input[type="text"], input[type="number"], input[type="url"], button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border: none;
+            border-radius: 5px;
+            background-color: #0b0c10;
+            color: #66fcf1;
+            box-shadow: 0 0 5px rgba(0, 255, 255, 0.5);
+        }
+
+        button {
+            background-color: #45a29e;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 1);
+        }
+
+        .button {
+            padding: 10px 20px;
+            background-color: #45a29e;
+            color: #0b0c10;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.75);
+        }
+
+        .logout-button {
+            background-color: #ff5555;
+            transition: background-color 0.3s ease;
+        }
+
+        .logout-button:hover {
+            background-color: #ff2e2e;
+            transform: rotate(-5deg);
+        }
+
+        .houses-button {
+            transition: background-color 0.3s ease;
+        }
+
+        .houses-button:hover {
+            background-color: #34d2af;
+            transform: rotate(5deg);
+        }
+
+    </style>
+</head>
+<body>
+<header>
+    <h1>Meeting Room Booking</h1>
+</header>
+<div class="container">
+    <div class="button-container">
+        <a href="/logout" class="button logout-button">LOGOUT</a>
+        <a href="/admin" class="button houses-button">OFFICES</a>
+    </div>
+    <h2>Добавление конференц-зала</h2>
+    <form id="propertyForm">
+        <label for="name">Название:</label>
+        <input type="text" id="name" name="name" required maxlength="500" />
+        <label for="area">Площадь (в метрах квадратных):</label>
+        <input type="number" id="area" name="area" required />
+        <label for="capacity">Макс. количество человек:</label>
+        <input type="number" id="capacity" name="capacity" required />
+        <label for="description">Описание:</label>
+        <input type="text" id="description" name="description" maxlength="1000" />
+        <label for="internetSpeed">Скорость интернета:</label>
+        <input type="number" id="internetSpeed" name="internetSpeed" required />
+        <label for="floor">Этаж:</label>
+        <input type="number" id="floor" name="floor" required />
+        <label for="photoURL">URL фотографии:</label>
+        <input type="text" id="photoURL" name="photoURL" required />
+        <button type="submit">Добавить объект</button>
+    </form>
+</div>
+
+<script>
+    // Функция для отправки данных формы через POST-запрос
+    document.getElementById('propertyForm').addEventListener('submit', function(event) {
+        event.preventDefault(); // Предотвращаем отправку формы по умолчанию
+
+        const formData = new FormData(event.target); // Получаем данные формы
+
+        const data = {
+            name: formData.get('name'),
+            area: formData.get('area'),
+            capacity: formData.get('capacity'),
+            description: formData.get('description') || null, // Описание может быть пустым
+            internet_speed: formData.get('internetSpeed'),
+            floor: formData.get('floor'),
+            photo_url: formData.get('photoURL')
+        };
+
+        // Отправляем данные на сервер
+        fetch('/api/rooms', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+        })
+        .then(response => response.json())
+.then(result => {
+    if (result.id) {
+        alert('Конференц-зал успешно добавлен!');
+    } else {
+        alert('Ошибка при добавлении конференц-зала: ' + result.error);
+    }
+})
+
+        .catch(error => {
+            console.error('Ошибка:', error);
+            alert('Произошла ошибка при отправке данных');
+        });
+    });
+</script>
+<footer>
+    © 2024 Meeting Room Booking. Черных Тимофей ИКБО-36-22.
+</footer>
+</body>
+</html>

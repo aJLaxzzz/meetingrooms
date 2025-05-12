@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Список комнат</title>
+    <title>Бронирования</title>
     <style>
         body {
             background-color: #121212; /* Темный фон */
@@ -303,93 +303,91 @@
     text-align: center; /* Центрируем текст */
     margin: 20px 0; /* Добавляем отступы сверху и снизу для лучшего визуального восприятия */
 }
+
+
+
+
+
     </style>
 </head>
 <body>
     <header>
         <div class="header-content">
-            <h1>Список переговорных комнат</h1>
+            <h1>Meeting Room Booking</h1>
         </div>
     </header>
     <div class="form-container">
         <a href="/logout" class="button logout-button">LOGOUT</a>
-        <a href="/account" class="button profile-button">Бронирование</a>
+        <a href="/rooms" class="button profile-button">Бронирование</a>
     </div>
     <div class="container">
-        {% for room in rooms %}
-            <div class="real-estate-listing">
-                <h2>{{ room.name }}</h2>
-                <img src="{{ url_for('static', filename=room.photo_url) }}" alt="Фото комнаты">
-                <p>Площадь: {{ room.area }} м²</p>
-                <p>Вместимость: {{ room.capacity }} человек</p>
-                <p>Скорость интернета: {{ room.internet_speed }} Мбит/с</p>
-                <p>Этаж: {{ room.floor }}</p>
-                <p>{{ room.description or 'Описание отсутствует' }}</p>
-                <div class="booking-details">
-                    <label for="startDate-{{ room.id }}">Дата начала:</label>
-                    <input type="date" id="startDate-{{ room.id }}" name="startDate-{{ room.id }}" required>
+        <h2 class="centered-title">Привет, <span id="username">{{ current_user.username }}</span>. Вот твои бронирования:</h2>
+        <div id="booking-container">
+            {% if bookings %}
+                {% for booking in bookings %}
+                    <div class="real-estate-listing">
+                        <h2>Объект #{{ booking.object_id }}</h2>
+                        <p>Начало: <span class="formatted-date">{{ booking.start_date }}</span></p>
+                        <p>Конец: <span class="formatted-date">{{ booking.end_date }}</span></p>
+                        {% set total_minutes = (booking.end_date - booking.start_date).total_seconds() // 60 %}
+                        <p>Продолжительность:
+                            {% if total_minutes >= 60 %}
+                                {{ (total_minutes // 60)|int }} ч {{ (total_minutes % 60)|int }} мин
+                            {% else %}
+                                {{ total_minutes|int }} мин
+                            {% endif %}
+                        </p>
 
-                    <label for="startHour-{{ room.id }}">Часы:</label>
-                    <select id="startHour-{{ room.id }}" name="startHour-{{ room.id }}" required>
-                        {% for hour in range(8, 21) %}
-                            <option value="{{ '%02d' % hour }}">{{ hour }}</option>
-                        {% endfor %}
-                    </select>
-
-                    <label for="startMinute-{{ room.id }}">Минуты:</label>
-                    <select id="startMinute-{{ room.id }}" name="startMinute-{{ room.id }}" required>
-                        <option value="00">00</option>
-                        <option value="30">30</option>
-                    </select>
-
-                    <label for="duration-{{ room.id }}">Продолжительность:</label>
-                    <select id="duration-{{ room.id }}" name="duration-{{ room.id }}" required>
-                        <option value="30">30 минут</option>
-                        <option value="60">1 час</option>
-                        <option value="90">1.5 часа</option>
-                        <option value="120">2 часа</option>
-                    </select>
-                </div>
-
-                <a class="booking-button" onclick="bookRoom({{ room.id }})">Забронировать</a>
-            </div>
-        {% endfor %}
+                        <button class="delete-booking" data-booking-id="{{ booking.id }}" onclick="deleteBooking(this)">✖ Удалить</button>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>У вас нет бронирований.</p>
+            {% endif %}
+        </div>
     </div>
-<script>
-    async function bookRoom(roomId) {
-        const date = document.getElementById(`startDate-${roomId}`).value;
-        const hour = document.getElementById(`startHour-${roomId}`).value;
-        const minute = document.getElementById(`startMinute-${roomId}`).value;
-        const duration = parseInt(document.getElementById(`duration-${roomId}`).value);
 
-        const startDateTime = new Date(`${date}T${hour}:${minute}:00`);
-        const endDateTime = new Date(startDateTime.getTime() + duration * 60000);
-
-        const payload = {
-            object_id: roomId,
-            user_id: {{ current_user.id }},
-            start_date: startDateTime.toISOString(),
-            end_date: endDateTime.toISOString()
-        };
-
-        const response = await fetch('/api/bookings', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(payload)
-        });
-
-        if (response.status === 201) {
-            alert("Бронирование успешно!");
-            window.location.reload();
-        } else if (response.status === 409) {
-            alert("Конфликт бронирования: выбранное время занято.");
-        } else {
-            alert("Ошибка при бронировании. Проверьте введённые данные.");
+    <script>
+        // Функция форматирования даты
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            // Смещение +3 часа
+            date.setHours(date.getHours() + 3);
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            return `${hours}:${minutes} ${day}.${month}.${year}`;
         }
-    }
-</script>
 
+        // Удаление бронирования
+        function deleteBooking(button) {
+            const bookingId = button.getAttribute('data-booking-id');
+            const url = `/api/bookings/${bookingId}`;
+
+            fetch(url, {
+                method: 'DELETE',
+            })
+                .then(response => {
+                    if (response.ok) {
+                        button.closest('.real-estate-listing').remove();  // Удаляем элемент
+                        alert('Бронь успешно удалена.');
+                    } else {
+                        alert('Ошибка при удалении бронирования. ID: ' + bookingId);
+                    }
+                })
+                .catch(error => {
+                    console.error('Ошибка:', error);
+                    alert('Ошибка при удалении бронирования.');
+                });
+        }
+    </script>
+<script>
+    document.querySelectorAll('.formatted-date').forEach(elem => {
+        elem.textContent = formatDate(elem.textContent);
+    });
+</script>
 </body>
+
 </html>

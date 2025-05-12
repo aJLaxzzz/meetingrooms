@@ -7,6 +7,8 @@ from flask_login import UserMixin
 
 
 class User(db.Model, UserMixin):
+    __tablename__ = 'users'
+
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), unique=True, nullable=False)
     password_hash = db.Column(db.String(128), nullable=False)
@@ -28,3 +30,22 @@ class MeetingRoom(db.Model):
 
     def __repr__(self):
         return f"<MeetingRoom {self.name}>"
+
+
+class Booking(db.Model):
+    __tablename__ = 'bookings'
+
+    id = db.Column(db.Integer, primary_key=True)
+    object_id = db.Column(db.Integer, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    start_date = db.Column(db.DateTime, nullable=False)
+    end_date = db.Column(db.DateTime, nullable=False)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'object_id': self.object_id,
+            'user_id': self.user_id,
+            'start_date': self.start_date.isoformat(),
+            'end_date': self.end_date.isoformat()
+        }

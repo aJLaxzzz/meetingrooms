@@ -1,8 +1,9 @@
 from flask import Blueprint, request, jsonify, render_template, redirect, url_for, flash
 from flask_login import login_user, logout_user, login_required, current_user
-from app.models import User, MeetingRoom
+from app.models import User, MeetingRoom, Booking
 from app.extensions import db, bcrypt
 from functools import wraps
+
 
 auth_bp = Blueprint('auth', __name__, template_folder='templates')
 
@@ -61,6 +62,7 @@ def api_logout():
 
 
 # --- HTML Routes ---
+from flask_login import login_user
 
 @auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
@@ -81,9 +83,15 @@ def register():
         user = User(username=username, password_hash=password_hash, role=role)
         db.session.add(user)
         db.session.commit()
+
+        # Логиним пользователя сразу после регистрации
+        login_user(user)
+
         flash('Регистрация прошла успешно. Войдите в систему.')
         print("Регистрация прошла успешно. Войдите в систему.")
-        return redirect('/rooms')
+
+        # Перенаправляем на страницу с комнатами
+        return redirect(url_for('auth.rooms'))
 
     return render_template('register.html')
 
@@ -98,11 +106,18 @@ def login():
         if user and bcrypt.check_password_hash(user.password_hash, password):
             login_user(user)
             print("Авторизация прошла успешно")
-            return redirect('/rooms')
+
+            # Проверка роли пользователя
+            if user.role == 'admin':
+                return redirect('/add')  # Для админа перенаправляем на /add
+            else:
+                return redirect('/rooms')  # Для обычного пользователя перенаправляем на /rooms
+
         flash('Неверные учетные данные')
-        print("Неверные учетеные данные")
+        print("Неверные учетные данные")
 
     return render_template('login.html')
+
 
 
 @auth_bp.route('/logout')
@@ -112,17 +127,6 @@ def logout():
     flash('Вы вышли из системы')
     return redirect(url_for('auth.login'))
 
-
-@auth_bp.route('/profile')
-@login_required
-def profile():
-    return render_template('profile.html', user=current_user)
-
-
-@auth_bp.route('/admin')
-@role_required('admin')
-def admin_area():
-    return render_template('admin.html', user=current_user)
 @auth_bp.route('/')
 def index():
     return redirect(url_for('auth.login'))
@@ -133,4 +137,49 @@ def rooms():
     # Делаем запрос к API, чтобы получить список комнат
     rooms = MeetingRoom.query.all()  # Это можно сделать через SQLAlchemy напрямую
     return render_template('rooms.html', rooms=rooms)
+
+@auth_bp.route('/add', methods=['GET'])
+def add_room():
+    return render_template('add.html')
+
+
+
+
+from datetime import datetime
+
+def calculate_duration(start_date, end_date):
+    """
+    Функция для вычисления продолжительности между двумя датами.
+
+    :param start_date: Начальная дата (datetime)
+    :param end_date: Конечная дата (datetime)
+    :return: продолжительность в минутах
+    """
+    duration = end_date - start_date  # Разница между датами
+    return duration.total_seconds() / 60  # Переводим в минуты
+
+# HTML
+@auth_bp.route('/account')
+@login_required
+def account():
+    bookings = Booking.query.filter_by(user_id=current_user.id).order_by(Booking.start_date).all()
+    rooms = MeetingRoom.query.all()  # Получаем все комнаты
+    return render_template('account.html', bookings=bookings, rooms=rooms)
+
+
+# API
+@auth_bp.route('/api/bookings')
+@login_required
+def get_bookings():
+    bookings = Booking.query.filter_by(user_id=current_user.id).order_by(Booking.start_date).all()
+    return jsonify([{
+        'id': booking.id,
+        'object_id': booking.object_id,
+        'start_date': booking.start_date.isoformat(),
+        'end_date': booking.end_date.isoformat(),
+    } for booking in bookings])
+
+
+
+
 
