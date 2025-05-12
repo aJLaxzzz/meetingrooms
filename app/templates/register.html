@@ -115,12 +115,6 @@
 </header>
 <div class="container">
     <form method="POST" th:action="@{/register}" th:object="${user}">
-        <div th:if="${param.exists}" class="alert alert-error">
-            Пользователь с таким именем существует
-        </div>
-        <div th:if="${param.error}" class="alert alert-error">
-            Пароли не совпадают!
-        </div>
         <div style="display: flex; justify-content: center; margin-bottom: 20px;">
             <h2>Регистрация</h2>
         </div>
@@ -143,7 +137,7 @@
     </form>
 </div>
 <footer>
-    © 2024 Meeting Room Booking. Черных Тимофей ИКБО-36-22.
+    © 2025 Meeting Room Booking. Черных Тимофей ИКБО-36-22.
 </footer>
 </body>
 </html>
