@@ -109,7 +109,7 @@ def login():
 
             # Проверка роли пользователя
             if user.role == 'admin':
-                return redirect('/add')  # Для админа перенаправляем на /add
+                return redirect('/admin')  # Для админа перенаправляем на /add
             else:
                 return redirect('/rooms')  # Для обычного пользователя перенаправляем на /rooms
 
@@ -181,5 +181,13 @@ def get_bookings():
 
 
 
+@auth_bp.route('/admin')
+@login_required
+@role_required('admin')  # Убедитесь, что роль пользователя — admin
+def admin():
+    # Получаем все бронирования и комнаты для отображения
+    rooms = MeetingRoom.query.all()
+    bookings = Booking.query.all()  # Получаем все бронирования
+    return render_template('admin.html', rooms=rooms, bookings=bookings)
 
 
