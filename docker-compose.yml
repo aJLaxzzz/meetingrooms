@@ -1,8 +1,12 @@
+
 services:
   app:
-    build: .
+    build:
+      dockerfile: ./Dockerfile
+      network: host
+    restart: always
     ports:
-      - "5000:5000"
+      - "127.0.0.1:5000:5000"
     volumes:
       - .:/app
     command: python run.py
