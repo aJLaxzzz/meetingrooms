@@ -313,24 +313,27 @@
     </header>
     <div class="form-container">
         <a href="/logout" class="button logout-button">LOGOUT</a>
-        <a href="/account" class="button profile-button">Бронирование</a>
+        <a href="/add" class="button profile-button">Добавить комнату</a>
     </div>
     <div class="container">
-        {% for room in rooms %}
-            <div class="real-estate-listing">
-                <h2>{{ room.name }}</h2>
-                <img src="{{ url_for('static', filename=room.photo_url) }}" alt="Фото комнаты">
-                <p>Площадь: {{ room.area }} м²</p>
-                <p>Вместимость: {{ room.capacity }} человек</p>
-                <p>Скорость интернета: {{ room.internet_speed }} Мбит/с</p>
-                <p>Этаж: {{ room.floor }}</p>
-                <p>{{ room.description or 'Описание отсутствует' }}</p>
-                <h3>Бронирования:</h3>
-                <div class="bookings" data-object-id="{{ room.id }}"></div>
-
+    {% for room in rooms %}
+        <div class="real-estate-listing">
+            <div class="delete-button-container">
+                <button class="delete-button delete-room" data-object-id="{{ room.id }}" onclick="deleteRoom(this)">✖</button>
             </div>
-        {% endfor %}
-    </div>
+            <h2>{{ room.name }}</h2>
+            <img src="{{ url_for('static', filename=room.photo_url) }}" alt="Фото комнаты">
+            <p>Площадь: {{ room.area }} м²</p>
+            <p>Вместимость: {{ room.capacity }} человек</p>
+            <p>Скорость интернета: {{ room.internet_speed }} Мбит/с</p>
+            <p>Этаж: {{ room.floor }}</p>
+            <p>{{ room.description or 'Описание отсутствует' }}</p>
+            <h3>Бронирования:</h3>
+            <div class="bookings" data-object-id="{{ room.id }}"></div>
+        </div>
+    {% endfor %}
+</div>
+
 <script>
     document.addEventListener("DOMContentLoaded", function() {
         const bookingElements = document.querySelectorAll('.bookings');
@@ -347,9 +350,23 @@
                 })
                 .then(bookings => {
                     bookings.forEach(booking => {
-                        const bookingInfo = `Начало: ${new Date(booking.start_date).toLocaleString()}, Конец: ${new Date(booking.end_date).toLocaleString()}, Пользователь: ${booking.username}`; // Используем имя пользователя
-                        const bookingItem = document.createElement('p');
-                        bookingItem.textContent = bookingInfo;
+                        const bookingItem = document.createElement('div');
+                        bookingItem.classList.add('booking-item');
+
+                        const bookingInfo = `Начало: ${new Date(booking.start_date).toLocaleString()}, Конец: ${new Date(booking.end_date).toLocaleString()}, Пользователь: ${booking.username}`;
+                        const bookingText = document.createElement('p');
+                        bookingText.textContent = bookingInfo;
+
+                        const deleteButton = document.createElement('button');
+                        deleteButton.classList.add('delete-button', 'delete-booking');
+                        deleteButton.setAttribute('data-object-id', booking.id);
+                        deleteButton.textContent = '✖';
+                        deleteButton.onclick = function() {
+                            deleteBooking(booking.id, bookingItem);
+                        };
+
+                        bookingItem.appendChild(bookingText);
+                        bookingItem.appendChild(deleteButton);
                         element.appendChild(bookingItem);
                     });
                 })
@@ -358,10 +375,56 @@
                 });
         });
     });
+
+    function deleteRoom(button) {
+        const roomId = button.getAttribute('data-object-id');
+
+        if (confirm('Вы уверены, что хотите удалить эту комнату?')) {
+            fetch(`/api/rooms/${roomId}`, {
+                method: 'DELETE'
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Ошибка при удалении комнаты');
+                }
+                return response.json();
+            })
+            .then(data => {
+                alert('Комната успешно удалена');
+                // Удаляем элемент из DOM
+                button.closest('.real-estate-listing').remove();
+            })
+            .catch(error => {
+                console.error('Ошибка:', error);
+                alert('Не удалось удалить комнату');
+            });
+        }
+    }
+
+    function deleteBooking(bookingId, bookingItem) {
+        if (confirm('Вы уверены, что хотите удалить это бронирование?')) {
+            fetch(`/api/bookings/${bookingId}`, {
+                method: 'DELETE'
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Ошибка при удалении бронирования');
+                }
+                if (response.status === 204) return null;
+                return response.json();
+            })
+            .then(data => {
+                alert('Бронирование успешно удалено');
+                //
+                // Удаляем элемент бронирования из DOM
+                bookingItem.remove();
+            })
+            .catch(error => {
+                console.error('Ошибка:', error);
+                alert('Не удалось удалить бронирование');
+            });
+        }
+    }
 </script>
-
-
-
-
 </body>
 </html>

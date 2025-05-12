@@ -1,5 +1,5 @@
 from flask_restful import Resource, reqparse
-from app.models import MeetingRoom
+from app.models import MeetingRoom, Booking
 from app.extensions import db
 
 # Обновленный парсер для POST запросов
@@ -52,11 +52,20 @@ class RoomListResource(Resource):
             "description": room.description
         }, 201
 
+
 class RoomResource(Resource):
     def delete(self, room_id):
         room = MeetingRoom.query.get(room_id)
         if not room:
             return {"error": "Not found"}, 404
+
+        # Удаляем все связанные бронирования
+        bookings = Booking.query.filter_by(object_id=room_id).all()
+        for booking in bookings:
+            db.session.delete(booking)
+
+        # Теперь удаляем саму комнату
         db.session.delete(room)
         db.session.commit()
         return {"message": "Deleted"}, 200
+
