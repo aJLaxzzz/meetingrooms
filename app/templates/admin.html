@@ -3,9 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Админская страница</title>
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-
+    <title>Список комнат</title>
     <style>
         body {
             background-color: #121212; /* Темный фон */
@@ -120,7 +118,20 @@
             text-decoration: underline;
         }
 
-
+        .real-estate-listing {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            margin-bottom: 20px;
+            background-color: #2b333e;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 255, 255, 0.5);
+            transition: transform 0.3s ease;
+            width: 60%; /* Moderately wide cards */
+            margin: 20px auto; /* Centering cards */
+        }
 
         .real-estate-listing:hover {
             transform: scale(1.03);
@@ -272,36 +283,7 @@
         transform: scale(1.05); /* Увеличение при наведении */
     }
 
-        .booking-info {
-    display: flex;
-    align-items: center; /* Центрируем элементы по вертикали */
-    justify-content: space-between; /* Распределяем пространство между элементами */
-}
-
-.delete-button-container {
-    position: absolute; /* Позволяет позиционировать кнопку относительно родительского контейнера */
-    top: 10px; /* Отступ сверху */
-    right: 10px; /* Отступ справа */
-    z-index: 1002; /* Убедитесь, что кнопка поверх других элементов */
-}
-
-.real-estate-listing {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    margin-bottom: 20px;
-    background-color: #2b333e;
-    padding: 15px;
-    border-radius: 10px;
-    box-shadow: 0 5px 15px rgba(0, 255, 255, 0.5);
-    transition: transform 0.3s ease;
-    width: 60%; /* Moderately wide cards */
-    margin: 20px auto; /* Centering cards */
-    position: relative; /* Добавлено для позиционирования кнопки удаления */
-}
-
-        .profile-button {
+               .profile-button {
     background-color: #66fcf1; /* Цвет фона для кнопки личного кабинета */
     color: #0b0c10; /* Цвет текста */
     text-align: center; /* Центрирование текста */
@@ -317,175 +299,69 @@
     width: auto; /* Только такой ширины, как его содержимое */
 }
 
-
-
-
-
-
+        .centered-title {
+    text-align: center; /* Центрируем текст */
+    margin: 20px 0; /* Добавляем отступы сверху и снизу для лучшего визуального восприятия */
+}
     </style>
 </head>
 <body>
-<header>
-    <div class="header-content">
-        <h1>Meeting Room Booking</h1>
-    </div>
-</header>
-<div class="form-container">
-    <a href="/logout" class="button logout-button">LOGOUT</a>
-    <a href="/add" class="button profile-button">Добавление</a>
-</div>
-<div class="container">
-
-    <div th:if="${meetingRooms.isEmpty()}">
-        <p>Нет доступных предложений недвижимости.</p>
-    </div>
-
-    <div th:unless="${meetingRooms.isEmpty()}">
-        <div th:each="meetingRoom : ${meetingRooms}" class="real-estate-listing">
-            <div class="delete-button-container">
-                <button class="delete-button delete-room" th:data-object-id="${meetingRoom.id}" onclick="deleteRoom(this)">✖</button>
-            </div>
-            <h2 th:text="${meetingRoom.name}">Название</h2>
-            <img th:src="@{${meetingRoom.photoURL}}" alt="Изображение недвижимости" class="img-fluid">
-            <p th:text="'Площадь: ' + ${meetingRoom.area} + ' кв. м.'">Площадь</p>
-            <p th:text="'Макс. количество человек: ' + ${meetingRoom.capacity}">Макс. количество человек</p>
-            <p th:text="'Описание: ' + ${meetingRoom.description}">Описание</p>
-            <p th:text="'Скорость интернета: ' + ${meetingRoom.internetSpeed} + 'Мбит/с'">Скорость интернета</p>
-            <p th:text="'Этаж: ' + ${meetingRoom.floor}">Этаж</p>
-
-            <h3>Бронирования:</h3>
-            <div class="bookings" th:data-object-id="${meetingRoom.id}"></div>
+    <header>
+        <div class="header-content">
+            <h1>Список переговорных комнат</h1>
         </div>
-
+    </header>
+    <div class="form-container">
+        <a href="/logout" class="button logout-button">LOGOUT</a>
+        <a href="/account" class="button profile-button">Бронирование</a>
     </div>
-</div>
+    <div class="container">
+        {% for room in rooms %}
+            <div class="real-estate-listing">
+                <h2>{{ room.name }}</h2>
+                <img src="{{ url_for('static', filename=room.photo_url) }}" alt="Фото комнаты">
+                <p>Площадь: {{ room.area }} м²</p>
+                <p>Вместимость: {{ room.capacity }} человек</p>
+                <p>Скорость интернета: {{ room.internet_speed }} Мбит/с</p>
+                <p>Этаж: {{ room.floor }}</p>
+                <p>{{ room.description or 'Описание отсутствует' }}</p>
+                <h3>Бронирования:</h3>
+                <div class="bookings" data-object-id="{{ room.id }}"></div>
 
+            </div>
+        {% endfor %}
+    </div>
 <script>
-    function deleteRoom(button) {
-            const roomId = button.getAttribute('data-object-id');
-            const url = `/api/rooms/${roomId}`;
+    document.addEventListener("DOMContentLoaded", function() {
+        const bookingElements = document.querySelectorAll('.bookings');
 
-            fetch(url, {
-                method: 'DELETE',
-            })
-                .then(response => {
-                    if (response.ok) {
-                        alert('Переговорная успешно удалена');
-                        location.reload();
-                    } else {
-                        alert('Ошибка при удалении переговорной. ID: ' + roomId);
-                    }
-                })
-                .catch(error => {
-                    console.error('Ошибка:', error);
-                    alert('Ошибка при удалении переговорной. Попробуйте еще раз.');
-                });
-        }
-        function deleteBooking(button) {
-            const bookingId = button.getAttribute('data-booking-id');
-            const url = `/api/bookings/${bookingId}`;
+        bookingElements.forEach(element => {
+            const roomId = element.getAttribute('data-object-id');
 
-            fetch(url, {
-                method: 'DELETE',
-            })
-                .then(response => {
-                    if (response.ok) {
-                        alert('Бронь успешно удалена.');
-                        location.reload();
-                    } else {
-                        alert('Ошибка при удалении бронирования. ID: ' + bookingId);
-                    }
-                })
-                .catch(error => {
-                    console.error('Ошибка:', error);
-                    alert('Ошибка при удалении брони. Попробуйте еще раз.');
-                });
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            const userMap = {}; // Создаем объект для сопоставления userId и информации о пользователе
-
-            // Получаем всех пользователей через API
-            fetch('/api/users')
+            fetch(`/api/bookings/object/${roomId}`)
                 .then(response => {
                     if (!response.ok) {
-                        throw new Error('Ошибка сети: ' + response.status);
+                        throw new Error('Network response was not ok');
                     }
                     return response.json();
                 })
-                .then(users => {
-                    // Заполняем объект userMap
-                    users.forEach(user => {
-                        userMap[user.id] = { name: user.name, email: user.email }; // Сохраняем имя и почту
+                .then(bookings => {
+                    bookings.forEach(booking => {
+                        const bookingInfo = `Начало: ${new Date(booking.start_date).toLocaleString()}, Конец: ${new Date(booking.end_date).toLocaleString()}, Пользователь: ${booking.username}`; // Используем имя пользователя
+                        const bookingItem = document.createElement('p');
+                        bookingItem.textContent = bookingInfo;
+                        element.appendChild(bookingItem);
                     });
-
-                    // Теперь загружаем бронирования
-                    loadBookings();
                 })
                 .catch(error => {
-                    console.error('Ошибка при загрузке пользователей:', error);
+                    console.error('Ошибка при получении бронирований:', error);
                 });
-
-            function formatDate(dateString) {
-                const date = new Date(dateString);
-                const hours = String(date.getHours()).padStart(2, '0');
-                const minutes = String(date.getMinutes()).padStart(2, '0');
-                const day = String(date.getDate()).padStart(2, '0');
-                const month = String(date.getMonth() + 1).padStart(2, '0'); // Месяцы начинаются с 0
-                const year = String(date.getFullYear()).slice(-2); // Получаем последние 2 цифры года
-
-                return `${hours}:${minutes} ${day}-${month}-${year}`;
-            }
-
-
-            function loadBookings() {
-                const bookingsContainers = document.querySelectorAll('.bookings');
-
-                bookingsContainers.forEach(function(container) {
-                    const objectId = container.getAttribute('data-object-id'); // Получаем идентификатор объекта
-                    console.log('Идентификатор объекта:', objectId);
-
-                    fetch(`/api/bookings/object/${objectId}`)
-                        .then(response => {
-                            if (!response.ok) {
-                                throw new Error('Ошибка сети: ' + response.status);
-                            }
-                            return response.json();
-                        })
-                        .then(bookings => {
-                            if (bookings.length === 0) {
-                                container.innerHTML = '<p>Нет бронирований.</p>';
-                            } else {
-                                bookings.forEach(function(booking) {
-                                    const user = userMap[booking.userId] || { name: 'Неизвестный пользователь', email: 'Неизвестная почта' }; // Получаем информацию о пользователе
-
-                                    const startDateFormatted = formatDate(booking.startDate);
-                                    const endDateFormatted = formatDate(booking.endDate);
-
-                                    // Вычисляем продолжительность в минутах
-                                    const startDate = new Date(booking.startDate);
-                                    const endDate = new Date(booking.endDate);
-                                    const durationInMinutes = Math.floor((endDate - startDate) / (1000 * 60)); // В минутах
-
-                                    container.innerHTML += `
-    <div class="booking-info">
-        <p>Имя: ${user.name}, Почта: ${user.email}, Начало: ${startDateFormatted}, Конец: ${endDateFormatted}, Продолжительность: ${durationInMinutes} мин.</p>
-        <button class="delete-booking delete-button" data-booking-id="${booking.id}" data-object-id="${objectId}" onclick="deleteBooking(this)" style="margin-left: 10px;">✖</button>
-    </div>`;
-
-                                });
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Ошибка при загрузке бронирований для объекта ID: ' + objectId, error);
-                        });
-                });
-            }
         });
+    });
 </script>
 
-<footer>
-    © 2024 Meeting Room Booking. Черных Тимофей ИКБО-36-22.
-</footer>
+
+
+
 </body>
 </html>

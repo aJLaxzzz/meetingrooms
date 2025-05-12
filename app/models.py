@@ -41,11 +41,14 @@ class Booking(db.Model):
     start_date = db.Column(db.DateTime, nullable=False)
     end_date = db.Column(db.DateTime, nullable=False)
 
+    user = db.relationship('User', backref='bookings')  # Добавляем связь с пользователем
+
     def to_dict(self):
         return {
             'id': self.id,
             'object_id': self.object_id,
             'user_id': self.user_id,
+            'username': self.user.username,  # Возвращаем имя пользователя
             'start_date': self.start_date.isoformat(),
             'end_date': self.end_date.isoformat()
         }

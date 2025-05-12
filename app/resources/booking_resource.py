@@ -66,6 +66,8 @@ class BookingResource(Resource):
         booking = Booking.query.get_or_404(booking_id)
         return booking.to_dict(), 200
 
+
+
     def put(self, booking_id):
         booking = Booking.query.get_or_404(booking_id)
         args = parser.parse_args()
